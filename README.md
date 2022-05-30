@@ -3,6 +3,7 @@ The repository stores relevant course material for the Master of Science in Anal
 
 # [Institute for Advanced Analytics](https://analytics.ncsu.edu/)
 
+
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
