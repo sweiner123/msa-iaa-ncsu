@@ -1,7 +1,7 @@
-# msa-iaa-ncsu
+# Master of Science in Analytics
 The repository stores relevant course material for the Master of Science in Analytics (MSA) at Institute for Advanced Analytics, NCSU.
 
-# [Institute for Advanced Analytics](https://analytics.ncsu.edu/)
+## [Institute for Advanced Analytics](https://analytics.ncsu.edu/)
 
 
 <!-- PROJECT LOGO -->
@@ -27,7 +27,7 @@ The MSA Analytics Primer is meant to serve as a refresher for the important math
 It's broken down as:
 
 * [Week 1: Fundamental Concepts, Probability & Distributions](https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/01.%20Summer%20I%20Analytics%20Primer/Week%201)
-* [Week 2: Confidence Intervals, Hypothesis Testing, & Intro to Regression](https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/01.%20Summer%20I%20Analytics%20Primer/Week%201)
+* [Week 2: Confidence Intervals, Hypothesis Testing, & Intro to Regression](https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/01.%20Summer%20I%20Analytics%20Primer/Week%202)
 
 
 ---
