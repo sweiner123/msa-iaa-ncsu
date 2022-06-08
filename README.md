@@ -28,6 +28,7 @@ It's broken down as:
 
 * [Week 1: Fundamental Concepts, Probability & Distributions](https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/01.%20Summer%20I%20Analytics%20Primer/Week%201)
 * [Week 2: Confidence Intervals, Hypothesis Testing, & Intro to Regression](https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/01.%20Summer%20I%20Analytics%20Primer/Week%202)
+* [Week 3: Linear Regression](https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/01.%20Summer%20I%20Analytics%20Primer/Week%203)
 
 
 ---
