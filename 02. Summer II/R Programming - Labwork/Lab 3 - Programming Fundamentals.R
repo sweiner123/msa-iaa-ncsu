@@ -31,6 +31,7 @@ round(ans[[1]],2)
 
 #Q - 7
 
+set.seed(1)
 sequence <- seq(1,10000)
 
 for(i in 1:length(sequence)){
