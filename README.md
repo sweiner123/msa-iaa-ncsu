@@ -35,6 +35,6 @@ It's broken down as:
 
 ## 2 - Summer II: AA 500 and AA 501
 
-## 2 - Fall I: AA 502 and AA 504
+## 3 - Fall I: AA 502 and AA 504
 
 * [Linear Algebra for Data Science](https://github.com/nikkhil13/msa-iaa-ncsu/blob/main/03.%20Fall%20I/Linear%20Algebra.ipynb)
