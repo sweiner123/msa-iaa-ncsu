@@ -35,14 +35,14 @@ It's broken down as:
 ## 2 - Summer II: AA 500 and AA 501
 
 <ul>
-  <li> <a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/00.%20Pre-requisites/SAS%20Programming%201">AA 500: Programming</a></li>
+  <li> <a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/02.%20Summer%20II/AA500%20-%20Programming">AA 500: Programming</a></li>
 
   <ol>
-    <li>R Programming</li>
-    <li>SAS Programming</li>
+    <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/02.%20Summer%20II/AA500%20-%20Programming/R%20Programming%20-%20Labwork">R Programming</a></li>
+    <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/02.%20Summer%20II/AA500%20-%20Programming/SAS%20Programming%20-%20Labwork">SAS Programming</a></li>
   </ol>
 
-  <li> <a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/00.%20Pre-requisites/SAS%20Programming%201">AA 501: Analytics Foundations</a></li>
+  <li> <a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/02.%20Summer%20II/AA501%20-%20Analytics%20Foundations">AA 501: Analytics Foundations</a></li>
 
   <ol>
     <li>Introduction to Statistics</li>
