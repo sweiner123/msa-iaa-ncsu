@@ -1,0 +1,63 @@
+library(ggplot2)
+library(tidyverse)
+library(AppliedPredictiveModeling)
+
+# Read in the cars datasets
+data(FuelEconomy)
+
+# Run the initial regression and look at the Global F-test and R-squared
+cars_lm <- lm(FE ~ EngDispl + 
+                   factor(NumCyl) + 
+                   Transmission + 
+                   AirAspirationMethod + 
+                   factor(NumGears) + 
+                   factor(TransLockup) + 
+                   factor(TransCreeperGear) + 
+                   DriveDesc + 
+                   factor(IntakeValvePerCyl) +
+                   factor(ExhaustValvesPerCyl) + 
+                   CarlineClassDesc + 
+                   factor(VarValveTiming) + 
+                   factor(VarValveLift), data = cars2010)
+
+summary(cars_lm)
+
+anova(cars_lm)
+
+# Rerun the model removing the VarValveTiming variable
+cars_lm2 <- lm(FE ~ EngDispl + 
+                    factor(NumCyl) + 
+                    Transmission + 
+                    AirAspirationMethod + 
+                    factor(NumGears) + 
+                    factor(TransLockup) + 
+                    factor(TransCreeperGear) + 
+                    DriveDesc + 
+                    factor(IntakeValvePerCyl) +
+                    factor(ExhaustValvesPerCyl) + 
+                    CarlineClassDesc + 
+                    #factor(VarValveTiming) + 
+                    factor(VarValveLift), data = cars2010)
+
+summary(cars_lm2)
+
+anova(cars_lm2)
+
+# Removing all variables ONE AT A TIME leaves you with the following model
+cars_lm3 <- lm(FE ~ EngDispl + 
+                    factor(NumCyl) + 
+                    Transmission + 
+                    AirAspirationMethod + 
+                    factor(NumGears) + 
+                    factor(TransLockup) + 
+                    #factor(TransCreeperGear) + 
+                    DriveDesc + 
+                    factor(IntakeValvePerCyl) +
+                    #factor(ExhaustValvesPerCyl) + 
+                    CarlineClassDesc + 
+                    #factor(VarValveTiming) + 
+                    factor(VarValveLift), data = cars2010)
+
+summary(cars_lm3)
+
+anova(cars_lm3)

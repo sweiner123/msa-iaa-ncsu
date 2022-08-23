@@ -1,0 +1,30 @@
+library(ggplot2)
+library(tidyverse)
+
+# Read in the bike data
+bike <- read.csv('https://raw.githubusercontent.com/IAA-Faculty/statistical_foundations/master/bike.csv')
+
+# Two-way ANOVA with interaction for count
+bike_aov_int <- aov(cnt ~ factor(workingday)*factor(season), data = bike)
+
+summary(bike_aov_int)
+
+# Two-way ANOVA with interaction for registered
+biker_aov_int <- aov(registered ~ factor(workingday)*factor(season), data = bike)
+
+summary(biker_aov_int)
+
+# Two-way ANOVA with interaction for casual
+bikec_aov_int <- aov(casual ~ factor(workingday)*factor(season), data = bike)
+
+summary(bikec_aov_int)
+
+# Sliced ANOVA for different levels of season for casual users
+bike_aov_s <- bike %>% 
+  group_by(season) %>%
+  nest() %>%
+  mutate(aov = map(data, ~summary(aov(casual ~ factor(workingday), data = .x))))
+
+bike_aov_s
+
+print(bike_aov_s$aov)

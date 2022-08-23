@@ -1,0 +1,66 @@
+library(ggplot2)
+library(tidyverse)
+library(RCurl)
+
+# Read in the drugdose datasets
+drugdose <- read.csv('https://raw.githubusercontent.com/IAA-Faculty/statistical_foundations/master/drug.csv')
+
+# Group the data by drug dose and disease and look at summary statistics of the change in blood pressure
+drug_plot <- drugdose %>% 
+  group_by(DrugDose, Disease) %>%
+  dplyr::summarise(mean = mean(BloodP), 
+                   sd = sd(BloodP), 
+                   max = max(BloodP), 
+                   min = min(BloodP))
+
+# Use the grouped data to plot the side-by-side bar chart for change in blood pressure
+ggplot(data = drug_plot, aes(x = DrugDose, y = mean, fill = Disease)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  labs(y = "Change in Blood Pressure", x = "Drug Dose Category") +
+  scale_fill_brewer(palette = "Paired") +
+  theme_minimal()
+
+# Two-way ANOVA with interaction
+dd_aov_int <- aov(BloodP ~ factor(DrugDose)*Disease, data = drugdose)
+
+summary(dd_aov_int)
+
+# Interaction was significant
+# Sliced ANOVA for different levels of heart disease
+dd_aov <- drugdose %>% 
+  group_by(Disease) %>%
+  nest() %>%
+  mutate(aov = map(data, ~summary(aov(BloodP ~ factor(DrugDose), data = .x))))
+
+print(dd_aov$aov)
+
+
+
+# Read in the disk data
+disks = read.csv('https://raw.githubusercontent.com/IAA-Faculty/statistical_foundations/master/disks.csv')
+
+# Two-way ANOVA with interaction
+d_aov_int <- aov(Time ~ Technician*factor(Brand), data = disks)
+
+summary(d_aov_int)
+
+# Interaction was significant
+# Sliced ANOVA for different levels of Brand
+d_aov_b <- disks %>% 
+  group_by(Brand) %>%
+  nest() %>%
+  mutate(aov = map(data, ~summary(aov(Time ~ Technician, data = .x))))
+
+print(d_aov_b$aov)
+
+# Sliced ANOVA for different levels of Technician
+d_aov_t <- disks %>% 
+  group_by(Technician) %>%
+  nest() %>%
+  mutate(aov = map(data, ~summary(aov(Time ~ factor(Brand), data = .x))))
+
+d_aov_t
+
+print(d_aov_t$aov)
+
+

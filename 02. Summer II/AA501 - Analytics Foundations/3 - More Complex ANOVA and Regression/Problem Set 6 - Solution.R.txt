@@ -1,0 +1,24 @@
+library(ggplot2)
+library(tidyverse)
+
+# Read in the bike data
+bike <- read.csv('https://raw.githubusercontent.com/IAA-Faculty/statistical_foundations/master/bike.csv')
+
+# Split into training and test datasets
+set.seed(123)
+
+bike <- bike %>% mutate(id = row_number())
+
+train <- bike %>% sample_frac(0.7)
+
+test <- anti_join(bike, train, by = 'id')
+
+# Run a multiple linear regression model with actual temperature, humidity, and windspeed
+bike_lm <- lm(cnt ~ temp + hum + windspeed, data = train)
+
+summary(bike_lm)
+
+# Run a multiple linear regression model with feeling temperature, humidity, and windspeed
+bike_lm2 <- lm(cnt ~ atemp + hum + windspeed, data = train)
+
+summary(bike_lm2)
