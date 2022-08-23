@@ -12,7 +12,6 @@ The repository stores relevant course material for the Master of Science in Anal
   </a>
  </div>
  
- 
 ---
 ## 0 - Program preparaton: Prequisites
 
@@ -35,6 +34,43 @@ It's broken down as:
 
 ## 2 - Summer II: AA 500 and AA 501
 
+<ul>
+  <li> <a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/00.%20Pre-requisites/SAS%20Programming%201">AA 500: Programming</a></li>
+
+  <ol>
+    <li>R Programming</li>
+    <li>SAS Programming</li>
+  </ol>
+
+  <li> <a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/00.%20Pre-requisites/SAS%20Programming%201">AA 501: Analytics Foundations</a></li>
+
+  <ol>
+    <li>Introduction to Statistics</li>
+    <li>Introduction to ANOVA and Regression</li>
+    <li>More Complex ANOVA and Regression</li>
+    <li>Model Selection</li>
+    <li>Diagnostics & Model Building</li>
+    <li>Categorical Data Analysis</li>
+  </ol>
+</ul>
+
+---
+
 ## 3 - Fall I: AA 502 and AA 504
 
-* [Linear Algebra for Data Science](https://github.com/nikkhil13/msa-iaa-ncsu/blob/main/03.%20Fall%20I/Linear%20Algebra.ipynb)
+<ul> 
+
+  <li> <a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/00.%20Pre-requisites/SAS%20Programming%201">Analytics Methods and Applications I</a></li>
+
+  <ol>
+    <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/blob/main/03.%20Fall%20I/Linear%20Algebra.ipynb">Linear Algebra for Data Science</a></li>
+
+  <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/blob/main/03.%20Fall%20I/Linear%20Algebra.ipynb">Python Class</a></li>
+
+    
+  </ol>
+
+
+
+
+</ul>
