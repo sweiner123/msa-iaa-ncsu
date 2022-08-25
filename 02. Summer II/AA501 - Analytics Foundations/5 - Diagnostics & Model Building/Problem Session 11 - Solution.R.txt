@@ -1,0 +1,61 @@
+library(ggplot2)
+library(tidyverse)
+library(glmnet)
+
+# Read in the bike data
+bike <- read.csv('https://raw.githubusercontent.com/IAA-Faculty/statistical_foundations/master/bike.csv')
+
+# Split into training and test datasets
+set.seed(123)
+
+bike <- bike %>% mutate(id = row_number())
+
+train <- bike %>% sample_frac(0.7)
+
+test <- anti_join(bike, train, by = 'id')
+
+# Build the predictor and target elements for modeling
+train_x <- model.matrix(cnt ~ atemp + 
+                              temp + 
+                              windspeed + 
+                              hum, 
+                        data = train)[, -1]
+
+train_y <- train$cnt
+
+# Run a multiple linear regression model with temperature, actual temperature, humidity, and windspeed
+bike_ridge <- glmnet(x = train_x,  y = train_y,  alpha = 0)
+
+plot(bike_ridge, xvar = "lambda")
+
+# Perform a CV to select the optimal ridge regression penalty
+bike_ridge_cv <- cv.glmnet(x = train_x,  y = train_y,  alpha = 0)
+
+plot(bike_ridge_cv)
+
+bike_ridge_cv$lambda.min
+
+# Prepare the test dataset
+test_x <- model.matrix(cnt ~ atemp + 
+                             temp + 
+                             windspeed + 
+                             hum, 
+                        data = test)[, -1]
+
+test_y <- test$cnt
+
+# Get test dataset predictions at the minimum MSE lambda value
+test$pred_ridge <- predict(bike_ridge, s = bike_ridge_cv$lambda.min, newx = test_x)
+
+test %>%
+  mutate(ridge_APE = 100*abs((cnt - pred_ridge)/cnt)) %>%
+  dplyr::summarise(MAPE_ridge = mean(ridge_APE))
+
+# MAPE calculation for MLR of bike dataset
+bike_lm2 <- lm(cnt ~ atemp + hum + windspeed, data = train)
+
+test$pred_lm <- predict(bike_lm2, newdata = test)
+
+test %>%
+  mutate(lm_APE = 100*abs((cnt - pred_lm)/cnt)) %>%
+  dplyr::summarise(MAPE_lm = mean(lm_APE))

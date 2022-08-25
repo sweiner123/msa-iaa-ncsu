@@ -1,0 +1,54 @@
+library(ggplot2)
+library(tidyverse)
+library(glmnet)
+library(AppliedPredictiveModeling)
+
+# Read in the cars datasets
+data(FuelEconomy)
+
+# Build the predictor and target elements for modeling
+train_x <- model.matrix(FE ~ EngDispl + 
+                          factor(NumCyl) + 
+                          Transmission + 
+                          AirAspirationMethod + 
+                          factor(NumGears) + 
+                          factor(TransLockup) + 
+                          factor(TransCreeperGear) + 
+                          DriveDesc + 
+                          factor(IntakeValvePerCyl) +
+                          factor(ExhaustValvesPerCyl) + 
+                          CarlineClassDesc + 
+                          factor(VarValveTiming) + 
+                          factor(VarValveLift), 
+                        data = cars2010)[, -4]
+
+train_y <- cars2010$FE
+
+# Build a LASSO regression
+cars_lasso <- glmnet(x = train_x,  y = train_y,  alpha = 1)
+
+plot(cars_lasso, xvar = "lambda")
+
+# Perform a CV to select the optimal LASSO regression penalty
+cars_lasso_cv <- cv.glmnet(x = train_x,  y = train_y,  alpha = 1)
+
+plot(cars_lasso_cv)
+
+cars_lasso_cv$lambda.min
+
+cars_lasso_cv$lambda.1se
+
+plot(cars_lasso, xvar = "lambda")
+abline(v = log(cars_lasso_cv$lambda.1se), col = "red", lty = "dashed")
+abline(v = log(cars_lasso_cv$lambda.min), col = "black", lty = "dashed")
+
+# Plot the important variables' coefficients at 1 SE above minimum penalty
+coef(cars_lasso, s = cars_lasso_cv$lambda.1se) %>%
+  broom::tidy() %>%
+  filter(row != "(Intercept)") %>%
+  ggplot(aes(value, reorder(row, value))) +
+  geom_point() +
+  ggtitle("Influential Variables") +
+  xlab("Coefficient") +
+  ylab(NULL)
+
