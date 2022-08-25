@@ -47,12 +47,12 @@ It's broken down as:
   <li> <a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/02.%20Summer%20II/AA501%20-%20Analytics%20Foundations">AA 501: Analytics Foundations</a></li>
 
   <ol>
-    <li>Introduction to Statistics</li>
-    <li>Introduction to ANOVA and Regression</li>
-    <li>More Complex ANOVA and Regression</li>
-    <li>Model Selection</li>
-    <li>Diagnostics & Model Building</li>
-    <li>Categorical Data Analysis</li>
+    <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/02.%20Summer%20II/AA501%20-%20Analytics%20Foundations/1%20-%20Introduction%20to%20Statistics">Introduction to Statistics</a></li>
+    <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/02.%20Summer%20II/AA501%20-%20Analytics%20Foundations/2%20-%20Introduction%20to%20ANOVA%20and%20Regression">Introduction to ANOVA and Regression</a></li>
+    <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/02.%20Summer%20II/AA501%20-%20Analytics%20Foundations/3%20-%20More%20Complex%20ANOVA%20and%20Regression">More Complex ANOVA and Regression</a></li>
+    <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/02.%20Summer%20II/AA501%20-%20Analytics%20Foundations/4%20-%20Model%20Selection">Model Selection</a></li>
+    <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/02.%20Summer%20II/AA501%20-%20Analytics%20Foundations/5%20-%20Diagnostics%20%26%20Model%20Building">Diagnostics & Model Building</a></li>
+    <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/02.%20Summer%20II/AA501%20-%20Analytics%20Foundations/6%20-%20Categorical%20Data%20Analysis">Categorical Data Analysis</a></li>
   </ol>
 </ul>
 
