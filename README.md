@@ -69,10 +69,20 @@ It's broken down as:
 
   <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/blob/main/03.%20Fall%20I/Linear%20Algebra.ipynb">Python Class</a></li>
 
-    
   </ol>
+</ul>
 
+## 4 - Fall II: AA 502
 
+<ul> 
 
+  <li> <a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/00.%20Pre-requisites/SAS%20Programming%201">Analytics Methods and Applications II</a></li>
+
+  <ol>
+  <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/blob/main/03.%20Fall%20I/Linear%20Algebra.ipynb">Data Mining</a></li>
+
+  <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/blob/main/03.%20Fall%20I/Linear%20Algebra.ipynb">Text Analytics</a></li>
+
+  </ol>
 
 </ul>
