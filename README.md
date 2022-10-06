@@ -81,7 +81,7 @@ It's broken down as:
   <ol>
   <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/blob/main/03.%20Fall%20I/Linear%20Algebra.ipynb">Data Mining</a></li>
 
-  <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/blob/main/03.%20Fall%20I/Linear%20Algebra.ipynb">Text Analytics</a></li>
+  <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/04.%20Fall%20II/Text%20Analytics">Text Analytics</a></li>
 
   </ol>
 
