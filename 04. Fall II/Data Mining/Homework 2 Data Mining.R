@@ -1,0 +1,65 @@
+# Homework 2 - Data Mining
+
+# Libs to load
+library(rpart)
+#install.packages("partykit")
+library(partykit)
+library(dplyr)
+library(rpart.plot)
+library(ggplot2)
+
+# Load csv
+churn <- read.csv("https://raw.githubusercontent.com/sjsimmo2/DataMining-Fall/master/TelcoChurn.csv")
+
+length(unique(churn$customerID))
+#7,043 customers
+
+#make this example reproducible
+set.seed(1)
+
+# Split to training and test
+train <- sample_frac(churn, 0.8)
+test <- anti_join(churn, train, by ='customerID')
+
+dim(train)
+dim(test)
+
+prop.table(table(train$Churn))
+prop.table(table(test$Churn))
+
+dtree_model <- rpart(Churn ~ . -customerID,data = train, method = 'class', parms = list(split = 'gini'))
+summary(dtree_model)
+
+rpart.plot(dtree_model)
+
+varimp_data <- data.frame(dtree_model$variable.importance)
+varimp_data$names <- as.character(rownames(varimp_data))
+
+ggplot(data = varimp_data, aes(x = reorder(names, dtree_model.variable.importance), y = dtree_model.variable.importance)) +
+  geom_bar(stat="identity") +
+  coord_flip() +
+  scale_y_continuous(labels = scales::comma) + 
+  labs(x = "Variable Name", y = "Variable Importance") +
+  geom_text(aes(label = scales::comma(dtree_model.variable.importance)), hjust = 0, color = "black")
+
+
+
+#Make Predictions
+
+predicted <-predict(dtree_model, test, type = 'class')
+
+train_scores = predict(dtree_model,type='class')
+test_scores = predict(dtree_model, test, type='class')
+
+##Training misclassification rate:
+sum(train_scores!=train$Churn)/nrow(train)
+
+#0.2028754
+
+### Test data:
+sum(test_scores!=test$Churn)/nrow(test)
+
+#0.2150461
+
+
+
