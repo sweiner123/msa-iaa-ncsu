@@ -1,0 +1,55 @@
+Lab #3:
+
+Question 1a
+-----
+select AVG(CAST(REPLACE(REPLACE("Total_Retail_Price",'$',''),',','') AS DOUBLE PRECISION)) as AVG
+	from "Jupiter".order_fact
+	where "Order_Type"=1;
+
+Question 1b
+-----
+select "Customer_ID", AVG(CAST(REPLACE(REPLACE("Total_Retail_Price",'$',''),',','') AS DOUBLE PRECISION)) as MeanPrice
+	from "Jupiter".order_fact
+	where "Order_Type"=1
+	group by 1
+	having AVG(CAST(REPLACE(REPLACE("Total_Retail_Price",'$',''),',','') AS DOUBLE PRECISION)) > (select AVG(CAST(REPLACE(REPLACE("Total_Retail_Price",'$',''),',','') AS DOUBLE PRECISION)) as AVG
+	from "Jupiter".order_fact
+	where "Order_Type"=1)
+	order by 2 desc;
+
+Question 2a
+-----
+select "Employee_ID"
+	from "Jupiter".employees
+	where EXTRACT(MONTH FROM TO_DATE("Birth_Date", 'MM/DD/YYYY'))=9
+	order by "Employee_ID";
+
+Question 2b
+-----
+select "Employee_ID","Employee_Name"
+	from "Jupiter".employee_addresses
+	where "Employee_ID" in
+	 	(select "Employee_ID"
+	from "Jupiter".employees
+	where EXTRACT(MONTH FROM TO_DATE("Birth_Date", 'MM/DD/YYYY'))=9
+	order by "Employee_ID")
+	order by 2;
+
+Question 3
+-----
+select movie_name
+from movies
+where genre_id NOT IN (select id from genres where genre in ('Comedy','Comedy/Drama','Exercise','Fantasy','Foreign','Animation','Horror','TV Classics','VAR','War'))
+order by movie_name desc;
+
+Question 4
+-----
+select p.name
+from people p, people_movies pm
+where p.id=pm.person_id and movie_id IN ('20372','8727','31670')
+order by p.name;
+
+
+
+
+

@@ -1,0 +1,34 @@
+Lab #2:
+
+Question 1
+-----
+select "Employee_Name", floor((TO_DATE('01SEP2022', 'DDMONYYYY') - TO_DATE("Start_Date", 'DDMONYYYY'))/365.25) as YOS
+from "Jupiter".employee_information i, "Jupiter".employee_addresses a
+where i."Employee_ID" = a."Employee_ID" and floor((TO_DATE('01SEP2021', 'DDMONYYYY') - TO_DATE("Start_Date", 'DDMONYYYY'))/365.25) > 30
+order by 1;
+
+
+Question 2
+-----
+select p."Product_ID", p."Product_Name", sum(o."Quantity") as Total_Sold
+from "Jupiter".product_dim p, "Jupiter".order_fact o
+where p."Product_ID" = o."Product_ID" and EXTRACT(YEAR FROM TO_DATE(o."Order_Date", 'DDMONYYYY')) >= 2010
+group by 1,2
+order by 3 desc, 2;
+
+
+Question 3
+-----
+select p.name, m.movie_name
+from people p, people_movies pm, movies m
+where p.id=pm.person_id and pm.movie_id=m.id
+order by 1;
+
+Question 4
+-----
+select p.name, count(*) as count_movies
+from people p, people_movies pm
+where p.id=pm.person_id
+group by 1
+order by 2 desc;
+

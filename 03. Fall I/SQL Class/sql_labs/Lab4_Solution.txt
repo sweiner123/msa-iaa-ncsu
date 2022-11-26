@@ -1,0 +1,38 @@
+Lab #4:
+
+Question 1
+-----
+select 'Total Paid to All Female Sales Representatives', sum(CAST(REPLACE(REPLACE("Salary",'$',''),',','') AS INTEGER)), count(*) as total
+ from "Jupiter".salesstaff
+ where "Gender"='F' and "Job_Title" like '%Rep%'
+union
+select 'Total Paid to All Male Sales Representatives', sum(CAST(REPLACE(REPLACE("Salary",'$',''),',','') AS INTEGER)), count(*) as total
+ from "Jupiter".salesstaff
+ where "Gender"='M' and "Job_Title" like '%Rep%';
+
+Question 2
+-----
+select "Employee_ID"
+from "Jupiter".employee_phones
+except
+select "Employee_ID"
+from "Jupiter".employee_addresses
+order by "Employee_ID";
+
+Question 3
+-----
+select id
+from movies
+except
+select movie_id
+from people_movies
+order by 1;
+
+Question 4
+-----
+select count(*)
+from (select "id"
+from movies
+except
+select "movie_id"
+from people_movies)
