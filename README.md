@@ -67,7 +67,7 @@ It's broken down as:
   <ol>
     <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/03.%20Fall%20I/Linear%20Algebra">Linear Algebra</a></li>
 
-  <li><a href="">Python Class</a></li>
+  <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/03.%20Fall%20I/Python%20Class">Python Class</a></li>
 
   <li><a href="">SQL Class</a></li>
 
