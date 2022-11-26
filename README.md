@@ -65,11 +65,15 @@ It's broken down as:
   <li> <a href="">Analytics Methods and Applications I</a></li>
 
   <ol>
-    <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/blob/main/03.%20Fall%20I/Linear%20Algebra.ipynb">Linear Algebra for Data Science</a></li>
+    <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/03.%20Fall%20I/Linear%20Algebra">Linear Algebra</a></li>
 
   <li><a href="">Python Class</a></li>
 
   <li><a href="">SQL Class</a></li>
+
+  <li><a href="">Time Series I</a></li>
+
+  <li><a href="">Logistic Regression</a></li>
 
   </ol>
 </ul>
