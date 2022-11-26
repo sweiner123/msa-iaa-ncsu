@@ -78,16 +78,20 @@ It's broken down as:
   </ol>
 </ul>
 
-## 4 - Fall II: AA 502
+## 4 - Fall II: AA 502 and AA 504
 
 <ul> 
 
-  <li> <a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/00.%20Pre-requisites/SAS%20Programming%201">Analytics Methods and Applications II</a></li>
+  <li> <a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/04.%20Fall%20II">Analytics Methods and Applications II</a></li>
 
   <ol>
-  <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/04.%20Fall%20II/Data%20Mining">Data Mining</a></li>
+  <li><a href="">Data Mining</a></li>
 
-  <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/04.%20Fall%20II/Text%20Analytics">Text Analytics</a></li>
+  <li><a href="">Text Analytics</a></li>
+
+  <li><a href="">Time Series II</a></li>
+
+  <li><a href="">Visualization</a></li>
 
   </ol>
 
