@@ -69,7 +69,7 @@ It's broken down as:
 
   <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/03.%20Fall%20I/Python%20Class">Python Class</a></li>
 
-  <li><a href="">SQL Class</a></li>
+  <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/03.%20Fall%20I/SQL%20Class">SQL Class</a></li>
 
   <li><a href="">Time Series I</a></li>
 

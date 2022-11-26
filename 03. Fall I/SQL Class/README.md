@@ -5,4 +5,4 @@
 * PostgreSQL
 * SQLite
 
-### [ - Practice Test](https://www.csc2.ncsu.edu/faculty/healey/msa/python/)
+### [ - Practice Test](https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/03.%20Fall%20I/SQL%20Class/practice_exam)
