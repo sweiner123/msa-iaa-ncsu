@@ -71,7 +71,7 @@ It's broken down as:
 
   <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/03.%20Fall%20I/SQL%20Class">SQL Class</a></li>
 
-  <li><a href="">Time Series I</a></li>
+  <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/03.%20Fall%20I/Time%20Series%20I">Time Series I</a></li>
 
   <li><a href="">Logistic Regression</a></li>
 
