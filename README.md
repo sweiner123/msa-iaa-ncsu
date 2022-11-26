@@ -62,12 +62,14 @@ It's broken down as:
 
 <ul> 
 
-  <li> <a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/00.%20Pre-requisites/SAS%20Programming%201">Analytics Methods and Applications I</a></li>
+  <li> <a href="">Analytics Methods and Applications I</a></li>
 
   <ol>
     <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/blob/main/03.%20Fall%20I/Linear%20Algebra.ipynb">Linear Algebra for Data Science</a></li>
 
-  <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/blob/main/03.%20Fall%20I/Linear%20Algebra.ipynb">Python Class</a></li>
+  <li><a href="">Python Class</a></li>
+
+  <li><a href="">SQL Class</a></li>
 
   </ol>
 </ul>
