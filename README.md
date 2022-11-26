@@ -62,7 +62,7 @@ It's broken down as:
 
 <ul> 
 
-  <li> <a href="">Analytics Methods and Applications I</a></li>
+  <li> <a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/03.%20Fall%20I">Analytics Methods and Applications I</a></li>
 
   <ol>
     <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/03.%20Fall%20I/Linear%20Algebra">Linear Algebra</a></li>
