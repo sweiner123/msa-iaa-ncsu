@@ -6,3 +6,7 @@
 ## The course material for [Text Analytics](https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/04.%20Fall%20II/Text%20Analytics) Class - 
 
 * [Text Analytics Notes by Dr. Healey](https://www.csc2.ncsu.edu/faculty/healey/msa/text/)
+
+## The course material for [Time Series II]() Class - 
+
+* [Time Series II Code Book]() 
