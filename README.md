@@ -85,9 +85,9 @@ It's broken down as:
   <li> <a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/04.%20Fall%20II">Analytics Methods and Applications II</a></li>
 
   <ol>
-  <li><a href="">Data Mining</a></li>
+  <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/04.%20Fall%20II/Data%20Mining">Data Mining</a></li>
 
-  <li><a href="">Text Analytics</a></li>
+  <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/04.%20Fall%20II/Text%20Analytics">Text Analytics</a></li>
 
   <li><a href="">Time Series II</a></li>
 
