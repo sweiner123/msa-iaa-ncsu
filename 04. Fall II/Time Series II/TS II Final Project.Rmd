@@ -1,0 +1,1215 @@
+---
+title: "TS II Final Project"
+output: html_document
+date: "2022-10-23"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Libraries, loading in data, and data cleaning
+```{r}
+### -------------------- ###
+### Time Series II Final ###
+### Fall-2 | Blue-19     ###
+### 10/28/2022           ###
+### -------------------- ###
+
+#############
+### Setup ###
+#############
+
+# Libraries
+
+library(tidyverse)
+library(lubridate)
+library(tseries)
+library(forecast)
+library(haven)
+library(fma)
+library(expsmooth)
+library(lmtest)
+library(zoo)
+library(seasonal)
+library(ggplot2)
+library(seasonalview)
+library(aTSA)
+library(imputeTS)
+library(reticulate)
+library(prophet)
+
+# Read CSV of Energy Consumption
+# Read CSV of Energy Consumption
+# Read CSV of Energy Consumption
+energy = read.csv("E:/NC State IAA/Classes/AA 502/Fall II/Time Series II/Homework/HW 2/hrl_load_metered.csv")
+
+##append the new data set
+energy1 <- read.csv("E:/NC State IAA/Classes/AA 502/Fall II/Time Series II/Homework/HW 2/hrl_load_metered - test1.csv")
+energy2 <- read.csv("E:/NC State IAA/Classes/AA 502/Fall II/Time Series II/Homework/HW 2/hrl_load_metered - test2.csv")
+energy3 <- read.csv("E:/NC State IAA/Classes/AA 502/Fall II/Time Series II/Homework/HW 2/hrl_load_metered - test3.csv")
+energy4 <- read.csv("E:/NC State IAA/Classes/AA 502/Fall II/Time Series II/Homework/HW 2/hrl_load_metered - test4.csv")
+
+
+#####################
+### Data Cleaning ###
+#####################
+
+# Create datetime variable from datetime_beginning_ept variable and sort
+
+energy$datetime <- strptime(energy$datetime_beginning_ept, "%m/%d/%y %H:%M")
+energy1$datetime <- strptime(energy1$datetime_beginning_ept, "%m/%d/%y %H:%M")
+energy2$datetime <- strptime(energy2$datetime_beginning_ept, "%m/%d/%y %H:%M")
+energy3$datetime <- strptime(energy3$datetime_beginning_ept, "%m/%d/%Y %H:%M")
+energy4$datetime <- strptime(energy4$datetime_beginning_ept, "%m/%d/%y %H:%M")
+
+
+
+energy = rbind(energy, energy1, energy2, energy3, energy4)
+
+#energy <- energy %>% arrange(energy$datetime)
+
+# Impute the 0 MW columns by averaging the previous and following MW Values
+
+energy$imp <- 0
+
+for (i in 1:nrow(energy)){
+  if (energy[i, "mw"] == 0){
+    energy[i,"imp"] <- 1
+    energy[i,"mw"] <- mean(c(energy[i - 1, "mw"], energy[i + 1, "mw"]))
+  }
+}
+
+# Adjust the time (1AM to 1:01AM) for Fall DST Change to establish sequence
+
+DST_index <- c(2259, 10995, 19899) # These are the Fall DST observations
+
+for (i in DST_index){
+  energy$imp[i] <- 2
+  energy$datetime[i] <- energy$datetime[i] + 60
+}
+
+# Re-sort the data following imputation and datetime corrections
+
+#energy <- energy %>% arrange(energy$datetime)
+
+###########################
+### Time Series Objects ###
+###########################
+
+# Create TS Object
+
+firstHour <- 24*(as.Date("2019-08-01 00:00:00")-as.Date("2019-1-1 00:00:00"))
+
+ts_energy <- ts(energy$mw, start = c(2019,firstHour), frequency = 24)
+
+length(ts_energy)
+
+# Create training set from overall energy Data
+ts_train <- subset(ts_energy, end = length(ts_energy)-168)
+autoplot(ts_train)
+
+length(ts_train)
+
+# Create valid set from overall energy Data
+ts_valid <- subset(ts_energy, start = length(ts_energy)-167)
+autoplot(ts_valid)
+
+length(ts_valid)
+
+
+
+###split the data set
+train <- energy[1:28080,]
+valid <- energy[28081:28248,]
+
+
+
+```
+
+ESM  Modeling
+```{r}
+
+####################
+### ESM Modeling ###
+####################
+
+#Building a Holt-Winters ESM - ts_energy - Additive Seasonality
+hwesa_train <- hw(ts_train, seasonal = "additive", h = 168)
+summary(hwesa_train)
+
+#autoplot(hwesa_train)+
+# autolayer(fitted(hwesa_train),series="Fitted")+ylab("Energy Consumption")
+
+# Building a Holt-Winters ESM - ts_energy - Multiplicative Seasonality
+hwesm_train <- hw(ts_train, seasonal = "multiplicative", h = 168)
+summary(hwesm_train)
+
+autoplot(hwesm_train)+
+  autolayer(fitted(hwesm_train),series="Fitted")+ylab("Energy Consumption")
+
+# Build an ETS
+#ets_train <- ets(ts_train)
+#summary(ets_train)
+
+#autoplot(ets_train)
+
+# Check forecast against validation set
+# Calculate prediction errors from forecast
+
+hwesa_for <- forecast::forecast(hwesa_train, h = 168)
+hwesa_error <- ts_valid - hwesa_for$mean
+
+hwesm_for <- forecast::forecast(hwesm_train, h = 168)
+hwesm_error <- valid$mw - hwesm_for$mean
+
+#ets_for <- ets_train %>% forecast::forecast(h=168)
+#ets_error <- ts_valid - ets_for$mean
+
+# Calculate prediction error statistics (MAE and MAPE)
+
+# HWESA
+HWESA_MAE <- mean(abs(hwesa_error))
+HWESA_MAPE <- mean(abs(hwesa_error)/abs(ts_valid))*100
+
+# HWESM
+HWESM_MAE <- mean(abs(hwesm_error))
+HWESM_MAPE <- mean(abs(hwesm_error)/abs(ts_valid))*100
+HWESM_MAE
+
+# ETS
+#ETS_MAE <- mean(abs(ets_error))
+#ETS_MAPE <- mean(abs(ets_error)/abs(ts_valid))*100
+
+# HWESA
+HWESA_MAE 
+HWESA_MAPE
+# HWESM
+HWESM_MAE 
+HWESM_MAPE
+# ETS
+#ETS_MAE
+#ETS_MAPE
+
+################
+### Plot ESM ###
+################
+
+# ESM Plotting
+
+plot_source_esm <- data.frame(energy$datetime[27913:28080,]) # pull the date time variable for the last 168 hours into your new table
+
+for_plot_esm <- forecast::forecast(hwesm_train, h = 168) # forecast from your selected ESM model
+
+plot_source_esm$forecast <- for_plot_esm$mean # Grab the $mean column from your forcast
+
+plot_source_esm$actual <- ts_valid # Grab the values from your validation TS object
+
+names(plot_source_esm)[1] <- "Hour" # Rename columns
+names(plot_source_esm)[2] <- "Forecast"
+names(plot_source_esm)[3] <- "Actual"
+
+# Graph forecast of ARIMA against Validation
+
+plot_source_long_esm <- pivot_longer(plot_source_esm, cols = Forecast:Actual, names_to = "Source", values_to = "Value") # Convert to 'long' form to help with plotting
+
+ggplot(plot_source_long_esm, aes(Hour, Value, group = Source, color = Source)) + # use 'long' table
+  geom_line() + # plot lines
+  scale_color_manual(values = c("black","deeppink")) + # set colors of your lines
+  labs(title = "Energy Usage with Holt-Winters Multiplicative ESM Overlay (Sept. 30 - Oct. 6, 2022)", x = "Date", y = "Energy Usage (Megawatts)") # labels
+
+```
+
+Arima Modeling
+```{r}
+######################
+### ARIMA Modeling ###
+######################
+
+# ARIMA(0,0,2)(3,1,2)[24]
+
+#ts_train %>% Arima(order=c(0,0,2), seasonal = c(3,1,2)) %>% residuals() %>% ggtsdisplay()
+
+FINAL_ARIMA <- Arima(ts_train, order=c(2,0,1), seasonal = c(4,1,0))
+
+summary(FINAL_ARIMA) # BIC=295077.4
+
+# Ljung Box
+
+#checkresiduals(FINAL_ARIMA) # LB p-value < 2.2e-16
+
+# Calculate Mean Error on validation
+
+FINAL_ARIMA_error <- ts_valid - forecast::forecast(FINAL_ARIMA, h = 168)$mean
+
+FINAL_ARIMA_MAE <- mean(abs(FINAL_ARIMA_error)) # 64.55064
+FINAL_ARIMA_MAE
+FINAL_ARIMA_MAPE <- mean(abs(FINAL_ARIMA_error)/abs(ts_valid))*100 # 8.111684
+FINAL_ARIMA_MAPE
+
+##################
+### Plot ARIMA ###
+##################
+
+plot_source <- data.frame(energy$datetime[27913:28080,]) # pull the date time variable for the last 168 hours into your new table
+
+for_plot <- forecast::forecast(FINAL_ARIMA, h = 168) # forecast from your selected ARIMA model
+
+plot_source$forecast <- for_plot$mean # Grab the $mean column from your forcast
+
+plot_source$actual <- ts_valid # Grab the values from your validation TS object
+
+names(plot_source)[1] <- "Hour" # Rename columns
+names(plot_source)[2] <- "Forecast"
+names(plot_source)[3] <- "Actual"
+
+plot_source_long <- pivot_longer(plot_source, cols = Forecast:Actual, names_to = "Source", values_to = "Value") # Convert to 'long' form to help with plotting
+
+# Graph forecast of ARIMA against Validation
+
+ggplot(plot_source_long, aes(Hour, Value, group = Source, color = Source)) + # use 'long' table
+  geom_line() + # plot lines
+  scale_color_manual(values = c("black","deeppink")) + # set colors of your lines
+  labs(title = "Energy Usage with ARIMA(0,0,2)(3,1,2)[24] Forecast Overlay (Sept. 30 - Oct. 6, 2022)", x = "Date", y = "Energy Usage (Megawatts)") # labels
+
+
+```
+
+Prophet Model
+```{r}
+#####################
+### Prophet Model ###
+#####################
+
+# Build dataframe with ds and y col names
+
+df <- data.frame(ds = train$datetime, y = train$mw)
+
+# Build Prophet Model
+
+prophet_train <- prophet(daily.seasonality = TRUE)
+
+# Fit The Model
+
+prophet_train <- fit.prophet(prophet_train, df)
+
+# Create Forecast
+
+future_date_df <- make_future_dataframe(prophet_train, periods = 168, freq = 3600)
+
+prediction <- predict(prophet_train, future_date_df)
+
+# Calculate prediction errors from forecast
+
+preds <- tail(predict(prophet_train, future_date_df)$yhat, 168)
+
+prophet_error <- valid$mw - preds
+
+# Calculate prediction error statistics (MAE and MAPE)
+prophet_MAE <- mean(abs(prophet_error))
+prophet_MAPE <- mean(abs(prophet_error)/abs(valid$mw))*100
+
+prophet_MAE #97.94216
+prophet_MAPE #12.36149
+
+# Plot Components
+
+prophet_plot_components(prophet_train, prediction)
+
+# Plot Model Over Valid
+
+plot(prophet_train, prediction)
+
+#############################
+### Plotting the forecast ###
+#############################
+
+# Build a Plotting df
+
+plot_source <- data.frame(valid$datetime[]) # pull the date time variable for the last 168 hours into your new table
+
+plot_source$forecast <- preds # Grab the $mean column from your forcast
+
+plot_source$actual <- valid$mw # Grab the values from your validation TS object
+
+names(plot_source)[1] <- "Hour" # Rename columns
+names(plot_source)[2] <- "Forecast"
+names(plot_source)[3] <- "Actual"
+
+plot_source_long <- pivot_longer(plot_source, cols = Forecast:Actual, names_to = "Source", values_to = "Value") # Convert to 'long' form to help with plotting
+
+# Graph forecast of ARIMA against Validation
+
+ggplot(plot_source_long, aes(Hour, Value, group = Source, color = Source)) + # use 'long' table
+  geom_line() + # plot lines
+  scale_color_manual(values = c("black","deeppink")) + # set colors of your lines
+  labs(title = "Energy Usage with Prophet Forecast Overlay (Oct. 7 - 13, 2022)", x = "Date", y = "Energy Usage (Megawatts)") # labels
+
+```
+
+
+Neural Network Model
+```{r}
+
+############################
+### Neural Network Model ###
+############################
+
+# Check ACF/PACF
+
+acf(ts_train)
+pacf(ts_train)
+
+# Set random seed
+set.seed(12345)
+
+# Build model
+
+#NN.Model1 <- nnetar(diff(ts_train, 24), p = 0, P = 1)  # NNAR(0,1,2)[24]
+#NN.Model2 <- nnetar(diff(ts_train, 24), p = 1, P = 1)  # NNAR(1,1,2)[24]
+#NN.Model3 <- nnetar(diff(ts_train, 24), p = 1, P = 2)  # NNAR(1,2,2)[24]
+NN.Model4 <- nnetar(diff(ts_train, 24), p = 1, P = 3)  # NNAR(1,3,2)[24]
+#NN.Model5 <- nnetar(diff(ts_train, 24), p = 2, P = 1)  # NNAR(2,1,2)[24]
+#NN.Model6 <- nnetar(diff(ts_train, 24), p = 2, P = 2)  # NNAR(2,2,2)[24]
+#NN.Model7 <- nnetar(diff(ts_train, 24), p = 2, P = 3)  # NNAR(2,3,3)[24]
+#NN.Model8 <- nnetar(diff(ts_train, 24), p = 3, P = 1)  # NNAR(3,1,2)[24]
+#NN.Model9 <- nnetar(diff(ts_train, 24), p = 3, P = 2)  # NNAR(3,2,3)[24]
+#NN.Model10 <- nnetar(diff(ts_train, 24), p = 3, P = 3) # NNAR(3,3,4)[24]
+
+
+# Forecast (Using best NNAR model above (8))
+NN.Forecast <- forecast::forecast(NN.Model4, h = 168)
+plot(NN.Forecast)
+
+Pass.Forecast <- rep(NA, 168)
+
+for (i in 1:24) {
+  Pass.Forecast[i] <- ts_train[length(ts_train) -24 + i] + forecast::forecast(NN.Model4, h = 24)$mean[i]
+}
+
+for(i in 25:168){
+  Pass.Forecast[i] <- Pass.Forecast[-24 + i] + forecast::forecast(NN.Model4, h = 168)$mean[i] # (Using best NNAR model above (8))
+}
+
+pass <- as.data.frame(Pass.Forecast)
+
+print(tail(valid))
+
+Pass.Forecast <- ts(Pass.Forecast, start = c(2019,firstHour), frequency = 24)
+
+plot(ts_train, main = "Energy Usage (Neural Network)", xlab = "Date", ylab = "Energy Usage (Megawatts)")
+
+# Calculate prediction errors from forecast
+
+NN.error <- ts_valid[1:168] - Pass.Forecast[1:168]
+
+# Calculate prediction error statistics (MAE and MAPE) (Using best NNAR model above (8))
+NN.MAE5 <- mean(abs(NN.error))
+
+NN.MAPE5 <- mean(abs(NN.error)/abs(ts_valid[1:168]))*100
+
+NN.MAE5 #62.11197
+NN.MAPE5 #7.85217
+
+##################
+### Plot NNAR  ###
+##################
+
+plot_source <- data.frame(energy$datetime[27913:28080]) # pull the date time variable for the last 168 hours into your new table
+
+for_plot <- forecast::forecast(NN.Model5, h = 168) # forecast from your selected ARIMA model (Using best NNAR model above (8))
+
+plot_source$forecast <- Pass.Forecast[1:168] # Grab the $mean column from your forecast
+
+plot_source$actual <- ts_valid # Grab the values from your validation TS object
+
+names(plot_source)[1] <- "Hour" # Rename columns
+names(plot_source)[2] <- "Forecast"
+names(plot_source)[3] <- "Actual"
+
+plot_source_long <- pivot_longer(plot_source, cols = Forecast:Actual, names_to = "Source", values_to = "Value") # Convert to 'long' form to help with plotting
+
+# Graph forecast of ARIMA against Validation
+
+ggplot(plot_source_long, aes(Hour, Value, group = Source, color = Source)) + # use 'long' table
+  geom_line() + # plot lines
+  scale_color_manual(values = c("black","deeppink")) + # set colors of your lines
+  labs(title = "Energy Usage with NNAR(3,1,2)[24] Forecast Overlay (Oct. 7 - 13, 2022)", x = "Date", y = "Energy Usage (Megawatts)") # labels
+
+```
+
+
+Weighted Average Models
+```{r}
+############################
+###   Averaging models   ###
+############################
+# avg of esm, arima, prophet, neural
+AvgHANP <- (hwesm_train$mean + 
+              forecast::forecast(FINAL_ARIMA, h = 168)$mean + 
+              as.numeric(Pass.Forecast) +
+              tail(predict(prophet_train, future_date_df)$yhat, 168))/4
+
+Avg.errorHANP <- valid$mw - AvgHANP
+
+print(as.numeric(Pass.Forecast))
+
+
+Avg.MAE_HANP <- mean(abs(Avg.errorHANP))
+Avg.MAPE_HANP <- mean(abs(Avg.errorHANP)/abs(valid$mw))*100
+
+Avg.MAE_HANP #44.095
+Avg.MAPE_HANP #5.46552
+
+# avg of esm, prophet, neural
+AvgHPN <- (hwesm_train$mean + 
+              as.numeric(Pass.Forecast) +
+               tail(predict(prophet_train, future_date_df)$yhat, 168))/3
+Avg.errorHPN <- valid$mw - AvgHPN
+
+Avg.MAE_HPN <- mean(abs(Avg.errorHPN))
+Avg.MAPE_HPN <- mean(abs(Avg.errorHPN)/abs(valid$mw))*100
+
+Avg.MAE_HPN
+Avg.MAPE_HPN
+
+
+
+#avg of esm and arima
+AvgHA <- (hwesm_train$mean + 
+            forecast::forecast(FINAL_ARIMA, h = 168)$mean)/2
+              
+Avg.errorHA <- valid$mw - AvgHA
+
+Avg.MAE_HA <- mean(abs(Avg.errorHA))
+Avg.MAPE_HA <- mean(abs(Avg.errorHA)/abs(valid$mw))*100
+
+Avg.MAE_HA
+Avg.MAPE_HA
+
+
+#avg of esm and prophet 
+AvgHP <- (hwesm_train$mean + 
+            tail(predict(prophet_train, future_date_df)$yhat, 168))/2
+            
+              
+Avg.errorHP <- valid$mw - AvgHP
+
+Avg.MAE_HP <- mean(abs(Avg.errorHP))
+Avg.MAPE_HP <- mean(abs(Avg.errorHP)/abs(valid$mw))*100
+
+Avg.MAE_HP
+Avg.MAPE_HP
+
+#avg of esm and neural
+AvgHN <- (hwesm_train$mean + 
+            as.numeric(Pass.Forecast))/2
+            
+              
+Avg.errorHN <- valid$mw - AvgHN
+
+Avg.MAE_HN <- mean(abs(Avg.errorHN))
+Avg.MAPE_HN <- mean(abs(Avg.errorHN)/abs(valid$mw))*100
+
+Avg.MAE_HN
+Avg.MAPE_HN
+
+#avg of esm, arima, prophet
+AvgHAP <- (hwesm_train$mean +
+            forecast::forecast(FINAL_ARIMA, h = 168)$mean +
+            tail(predict(prophet_train, future_date_df)$yhat, 168))/3
+            
+              
+Avg.errorHAP <- valid$mw - AvgHAP
+
+Avg.MAE_HAP <- mean(abs(Avg.errorHAP))
+Avg.MAPE_HAP <- mean(abs(Avg.errorHAP)/abs(valid$mw))*100
+
+Avg.MAE_HAP
+Avg.MAPE_HAP
+
+#avg of esm, arima, neural
+AvgHAN <- (hwesm_train$mean +
+            forecast::forecast(FINAL_ARIMA, h = 168)$mean +
+            as.numeric(Pass.Forecast))/3
+
+        
+Avg.errorHAN <- valid$mw - AvgHAN
+
+Avg.MAE_HAN <- mean(abs(Avg.errorHAN))
+Avg.MAPE_HAN <- mean(abs(Avg.errorHAN)/abs(valid$mw))*100
+
+Avg.MAE_HAN
+Avg.MAPE_HAN
+
+#avg of arima and prophet
+AvgAP <- (tail(predict(prophet_train, future_date_df)$yhat, 168) +
+            forecast::forecast(FINAL_ARIMA, h = 168)$mean)/2
+            
+              
+Avg.errorAP <- valid$mw - AvgAP
+
+Avg.MAE_AP <- mean(abs(Avg.errorAP))
+Avg.MAPE_AP <- mean(abs(Avg.errorAP)/abs(valid$mw))*100
+
+Avg.MAE_AP
+Avg.MAPE_AP
+
+#avg of arima and neural
+AvgAN <-  (forecast::forecast(FINAL_ARIMA, h = 168)$mean +
+            as.numeric(Pass.Forecast))/2
+            
+              
+Avg.errorAN <- valid$mw - AvgAN
+
+Avg.MAE_AN <- mean(abs(Avg.errorAN))
+Avg.MAPE_AN <- mean(abs(Avg.errorAN)/abs(valid$mw))*100
+
+Avg.MAE_AN
+Avg.MAPE_AN
+
+#avg of arima, neural and prophet
+AvgANP <-  (forecast::forecast(FINAL_ARIMA, h = 168)$mean +
+            as.numeric(Pass.Forecast) +
+            tail(predict(prophet_train, future_date_df)$yhat, 168))/3
+            
+              
+Avg.errorANP <- valid$mw - AvgANP
+
+Avg.MAE_ANP <- mean(abs(Avg.errorANP))
+Avg.MAPE_ANP <- mean(abs(Avg.errorANP)/abs(valid$mw))*100
+
+Avg.MAE_ANP
+Avg.MAPE_ANP
+
+#avg of neural and prophet
+AvgNP <- (as.numeric(Pass.Forecast) +
+            tail(predict(prophet_train, future_date_df)$yhat, 168))/2
+            
+              
+Avg.errorNP <- valid$mw - AvgNP
+
+Avg.MAE_NP <- mean(abs(Avg.errorNP))
+Avg.MAPE_NP <- mean(abs(Avg.errorNP)/abs(valid$mw))*100
+
+Avg.MAE_NP
+Avg.MAPE_NP
+
+
+############################
+###   Weighted average   ###
+############################
+
+
+Pass.Fit.NN <- rep(NA, 28080)
+
+for (i in 97:28080) {
+  Pass.Fit.NN[i] <- train$mw[i-24] + NN.Model4$fitted[i]
+}
+
+head(Pass.Fit.NN, n = 100)
+
+
+Pass.Fit.ARIMA <- FINAL_ARIMA$fitted
+Pass.Fit.HWES <- hwesm_train$fitted
+Pass.Fit.Prophet <- head(predict(prophet_train, future_date_df)$yhat, 28080)
+
+
+print(length(hwesm_train$fitted))
+
+####build the weighted average models#####
+
+#hw, arima, nn, prophet
+WC.Model <- lm(train$mw ~ offset(Pass.Fit.HWES) + I(Pass.Fit.ARIMA - Pass.Fit.HWES) + I(Pass.Fit.Prophet - Pass.Fit.HWES) + I(Pass.Fit.NN-Pass.Fit.HWES) - 1)
+summary(WC.Model)
+
+ARIMA.coef <- coef(WC.Model)[1]
+NN.coef <- coef(WC.Model)[3]
+Prophet.coef <- coef(WC.Model)[2]
+HW.coef <- 1 - ARIMA.coef - Prophet.coef - NN.coef
+
+
+For.W.Avg <- HW.coef*hwesm_train$mean + 
+  ARIMA.coef*forecast::forecast(FINAL_ARIMA, h = 168)$mean + 
+  Prophet.coef*tail(predict(prophet_train, future_date_df)$yhat, 168) +
+  NN.coef*as.numeric(Pass.Forecast)
+
+print(hwesm_train$mean)
+
+W.Avg.error <- valid$mw - For.W.Avg
+
+W.Avg.MAE <- mean(abs(W.Avg.error))
+W.Avg.MAPE <- mean(abs(W.Avg.error)/abs(valid$mw))*100
+
+W.Avg.MAE
+W.Avg.MAPE
+
+##arima and nn
+WC.Model1 <- lm(train$mw ~ offset(Pass.Fit.ARIMA) + I(Pass.Fit.NN - Pass.Fit.ARIMA) - 1)
+summary(WC.Model1)
+
+NN.coef1 <- coef(WC.Model1)[1]
+ARIMA.coef1 <- 1 - NN.coef1
+
+
+For.W.Avg1 <- ARIMA.coef1*forecast::forecast(FINAL_ARIMA, h = 168)$mean + 
+  NN.coef1*as.numeric(Pass.Forecast)
+
+W.Avg.error1 <- valid$mw - For.W.Avg1
+
+W.Avg.MAE1 <- mean(abs(W.Avg.error1))
+W.Avg.MAPE1 <- mean(abs(W.Avg.error1)/abs(valid$mw))*100
+
+W.Avg.MAE1
+W.Avg.MAPE1
+
+
+#arima and hw
+WC.Model2 <- lm(train$mw ~ offset(Pass.Fit.ARIMA) + I(Pass.Fit.HWES - Pass.Fit.ARIMA) - 1)
+summary(WC.Model2)
+
+HW.coef2 <- coef(WC.Model2)[1]
+ARIMA.coef2 <- 1 - HW.coef2
+
+
+For.W.Avg2 <- ARIMA.coef2*forecast::forecast(FINAL_ARIMA, h = 168)$mean + 
+  HW.coef2*hwesm_train$mean
+
+W.Avg.error2 <- valid$mw - For.W.Avg2
+
+W.Avg.MAE2 <- mean(abs(W.Avg.error2))
+W.Avg.MAPE2 <- mean(abs(W.Avg.error2)/abs(valid$mw))*100
+
+W.Avg.MAE2
+W.Avg.MAPE2
+
+#arima and prophet
+WC.Model3 <- lm(train$mw ~ offset(Pass.Fit.ARIMA) + I(Pass.Fit.Prophet - Pass.Fit.ARIMA) - 1)
+summary(WC.Model3)
+
+Prophet.coef3 <- coef(WC.Model3)[1]
+ARIMA.coef3 <- 1 - Prophet.coef3
+
+
+For.W.Avg3 <- ARIMA.coef3*forecast::forecast(FINAL_ARIMA, h = 168)$mean + 
+  Prophet.coef3*tail(predict(prophet_train, future_date_df)$yhat, 168)
+
+W.Avg.error3 <- valid$mw - For.W.Avg3
+
+W.Avg.MAE3 <- mean(abs(W.Avg.error3))
+W.Avg.MAPE3 <- mean(abs(W.Avg.error3)/abs(valid$mw))*100
+
+W.Avg.MAE3
+W.Avg.MAPE3
+
+#esm and prophet
+WC.Model4 <- lm(train$mw ~ offset(Pass.Fit.HWES) + I(Pass.Fit.Prophet - Pass.Fit.HWES) - 1)
+summary(WC.Model4)
+
+Prophet.coef4 <- coef(WC.Model4)[1]
+HWES.coef4 <- 1 - Prophet.coef4
+
+
+For.W.Avg4 <- HWES.coef4* + hwesm_train$mean +
+  Prophet.coef4*tail(predict(prophet_train, future_date_df)$yhat, 168)
+
+W.Avg.error4 <- valid$mw - For.W.Avg4
+
+W.Avg.MAE4 <- mean(abs(W.Avg.error4))
+W.Avg.MAPE4 <- mean(abs(W.Avg.error4)/abs(valid$mw))*100
+
+W.Avg.MAE4
+W.Avg.MAPE4
+
+
+#esm, neural
+WC.Model5 <- lm(train$mw ~ offset(Pass.Fit.HWES) + I(Pass.Fit.NN - Pass.Fit.HWES) - 1)
+summary(WC.Model5)
+
+NN.coef5 <- coef(WC.Model5)[1]
+HWES.coef5 <- 1 - NN.coef5
+
+
+For.W.Avg5 <- HWES.coef5*hwesm_train$mean + 
+  NN.coef5*as.numeric(Pass.Forecast)
+  
+
+W.Avg.error5 <- valid$mw - For.W.Avg5
+
+W.Avg.MAE5 <- mean(abs(W.Avg.error5))
+W.Avg.MAPE5 <- mean(abs(W.Avg.error5)/abs(valid$mw))*100
+
+W.Avg.MAE5
+W.Avg.MAPE5
+
+
+#esm, arima, neural
+WC.Model6 <- lm(train$mw ~ offset(Pass.Fit.ARIMA) + I(Pass.Fit.NN - Pass.Fit.ARIMA) + I(Pass.Fit.HWES - Pass.Fit.ARIMA) - 1)
+summary(WC.Model6)
+
+NN.coef6 <- coef(WC.Model6)[1]
+HWES.coef6 <- coef(WC.Model6)[2]
+ARIMA.coef6 <- 1 - NN.coef6 - HWES.coef6
+
+
+For.W.Avg6 <- ARIMA.coef6*forecast::forecast(FINAL_ARIMA, h = 168)$mean + 
+  HWES.coef6*hwesm_train$mean + 
+  NN.coef6*as.numeric(Pass.Forecast)
+
+W.Avg.error6 <- valid$mw - For.W.Avg6
+
+W.Avg.MAE6 <- mean(abs(W.Avg.error6))
+W.Avg.MAPE6 <- mean(abs(W.Avg.error6)/abs(valid$mw))*100
+
+W.Avg.MAE6
+W.Avg.MAPE6
+
+
+#arima, neural, prophet
+WC.Model7 <- lm(train$mw ~ offset(Pass.Fit.ARIMA) + I(Pass.Fit.Prophet - Pass.Fit.ARIMA) + I(Pass.Fit.NN - Pass.Fit.ARIMA) - 1)
+summary(WC.Model7)
+
+Prophet.coef7 <- coef(WC.Model7)[1]
+NN.coef7 <- coef(WC.Model7)[2]
+ARIMA.coef7 <- 1 - Prophet.coef7 - NN.coef7 
+
+
+For.W.Avg7 <- ARIMA.coef7*forecast::forecast(FINAL_ARIMA, h = 168)$mean + 
+  Prophet.coef7*tail(predict(prophet_train, future_date_df)$yhat, 168) +
+  NN.coef7*as.numeric(Pass.Forecast)
+
+W.Avg.error7 <- valid$mw - For.W.Avg7
+
+W.Avg.MAE7 <- mean(abs(W.Avg.error7))
+W.Avg.MAPE7 <- mean(abs(W.Avg.error7)/abs(valid$mw))*100
+
+W.Avg.MAE7
+W.Avg.MAPE7
+
+
+###esm, neural , prophet
+WC.Model8 <- lm(train$mw ~ offset(Pass.Fit.HWES) + I(Pass.Fit.Prophet - Pass.Fit.HWES) + I(Pass.Fit.NN - Pass.Fit.HWES) - 1)
+summary(WC.Model8)
+
+Prophet.coef8 <- coef(WC.Model8)[1]
+NN.coef8 <- coef(WC.Model8)[2]
+HWES.coef8 <- 1 - Prophet.coef8 - NN.coef8
+
+
+For.W.Avg8 <- HWES.coef8*hwesm_train$mean+ 
+  Prophet.coef8*tail(predict(prophet_train, future_date_df)$yhat, 168) +
+  NN.coef8*as.numeric(Pass.Forecast)
+
+W.Avg.error8 <- valid$mw - For.W.Avg8
+
+W.Avg.MAE8 <- mean(abs(W.Avg.error8))
+W.Avg.MAPE8 <- mean(abs(W.Avg.error8)/abs(valid$mw))*100
+
+W.Avg.MAE8
+W.Avg.MAPE8
+
+#neural, prophet
+WC.Model9 <- lm(train$mw ~ offset(Pass.Fit.NN) + I(Pass.Fit.Prophet - Pass.Fit.NN) - 1)
+summary(WC.Model3)
+
+Prophet.coef9 <- coef(WC.Model9)[1]
+NN.coef9 <- 1 - Prophet.coef9
+
+
+For.W.Avg9 <- NN.coef9*as.numeric(Pass.Forecast) +
+  Prophet.coef9*tail(predict(prophet_train, future_date_df)$yhat, 168)
+
+W.Avg.error9 <- valid$mw - For.W.Avg9
+
+W.Avg.MAE9 <- mean(abs(W.Avg.error9))
+W.Avg.MAPE9 <- mean(abs(W.Avg.error9)/abs(valid$mw))*100
+
+W.Avg.MAE9
+W.Avg.MAPE9
+
+
+#esm, arima, prophet
+WC.Model10 <- lm(train$mw ~ offset(Pass.Fit.HWES) + I(Pass.Fit.Prophet - Pass.Fit.HWES) + I(Pass.Fit.ARIMA - Pass.Fit.HWES) - 1)
+summary(WC.Model10)
+
+Prophet.coef10 <- coef(WC.Model10)[1]
+ARIMA.coef10 <- coef(WC.Model10)[2]
+HWES.coef10 <- 1 - Prophet.coef10 - ARIMA.coef10
+
+
+For.W.Avg10 <- HWES.coef10*hwesm_train$mean+ 
+  Prophet.coef10*tail(predict(prophet_train, future_date_df)$yhat, 168) +
+  ARIMA.coef10*forecast::forecast(FINAL_ARIMA, h = 168)$mean
+
+W.Avg.error10 <- valid$mw - For.W.Avg10
+
+W.Avg.MAE10 <- mean(abs(W.Avg.error10))
+W.Avg.MAPE10 <- mean(abs(W.Avg.error10)/abs(valid$mw))*100
+
+W.Avg.MAE10
+W.Avg.MAPE10
+
+```
+
+
+TBATS Model
+```{r}
+install.packages('forecast')
+library(forecast)
+
+
+#build a tbats model
+tbats_model <- tbats(new_ts_train)
+
+#forecast the tbats model
+tbats_forecast = forecast::forecast(tbats_model, h=length(ts_valid))
+
+#tbats error
+tbats_error <- tbats_forecast$mean - valid$mw
+
+#MAE
+MAEtbats <- mean(abs(tbats_error))
+MAEtbats
+
+#tbats MAPE
+MAPEtbats <- mean(abs(tbats_error)/abs(valid$mw))*100
+MAPEtbats
+
+
+
+
+```
+
+Calculate the Test data accuracy
+```{r}
+#recombine the training and the validation in order to calculate MAE and MAPE on the test data
+
+newTrain <- rbind(train, valid)
+
+#import the testing data
+test <- read.csv("E:/NC State IAA/Classes/AA 502/Fall II/Time Series II/Homework/HW 2/hrl_load_metered - test5.csv")
+test$datetime <- strptime(test$datetime_beginning_ept, "%m/%d/%y %H:%M")
+
+test$imp <- 0
+
+
+#build a new time series object
+new_ts_train <- ts(newTrain$mw, start = c(2019,firstHour), frequency = 24)
+
+#build the holt winters on the new training data
+FINALhwesm_train <- hw(new_ts_train, seasonal = "multiplicative", h = 144)
+summary(FINALhwesm_train)
+
+#build the arima model on the new training data
+new_ARIMA <- Arima(new_ts_train, order=c(2,0,1), seasonal = c(4,1,0))
+
+
+#build the final weighted average model
+FINALPass.Fit.ARIMA <- new_ARIMA$fitted
+FINALPass.Fit.HWES <- FINALhwesm_train$fitted
+
+FINALWC.Model <- lm(newTrain$mw ~ offset(FINALPass.Fit.ARIMA) + I(FINALPass.Fit.HWES - FINALPass.Fit.ARIMA) - 1)
+summary(FINALWC.Model)
+
+HW.coefFINAL <- coef(FINALWC.Model)[1]
+ARIMA.coefFINAL <- 1 - HW.coefFINAL
+
+
+FINAL_For.W.Avg <- ARIMA.coefFINAL*forecast::forecast(new_ARIMA, h = 144)$mean + 
+  HW.coefFINAL*FINALhwesm_train$mean
+
+FINAL_W.Avg.error <- test$mw - FINAL_For.W.Avg
+
+W.Avg.MAE_FINAL <- mean(abs(FINAL_W.Avg.error))
+W.Avg.MAPE_FINAL <- mean(abs(FINAL_W.Avg.error)/abs(test$mw))*100
+
+W.Avg.MAE_FINAL
+W.Avg.MAPE_FINAL
+
+```
+
+Extract the Forecasts for the next week and store them into a csv
+```{r}
+#combine train and test
+final <- rbind(newTrain, test)
+
+final_ts_train <- ts(final$mw, start = c(2019,firstHour), frequency = 24)
+
+#build the holt winters on the new training data
+FINAL1hwesm_train <- hw(final_ts_train, seasonal = "multiplicative", h = 192)
+summary(FINAL1hwesm_train)
+
+#build the arima model on the new training data
+new_ARIMA1 <- Arima(final_ts_train, order=c(2,0,1), seasonal = c(4,1,0))
+
+FINAL1Pass.Fit.ARIMA <- new_ARIMA1$fitted
+FINAL1Pass.Fit.HWES <- FINAL1hwesm_train$fitted
+
+FINAL1WC.Model <- lm(final$mw ~ offset(FINAL1Pass.Fit.ARIMA) + I(FINAL1Pass.Fit.HWES - FINAL1Pass.Fit.ARIMA) - 1)
+summary(FINAL1WC.Model)
+
+HW.coefFINAL1 <- coef(FINAL1WC.Model)[1]
+ARIMA.coefFINAL1 <- 1 - HW.coefFINAL1
+
+
+FINAL_For.W.Avg1 <- ARIMA.coefFINAL1*forecast::forecast(new_ARIMA1, h = 192)$mean + 
+  HW.coefFINAL1*FINAL1hwesm_train$mean
+
+print(length(forecast::forecast(new_ARIMA1, h = 192)$mean))
+
+
+dfFINAL_For.W.Avg1 <- as.data.frame(FINAL_For.W.Avg1)
+
+forecasts <- data.frame()
+
+forecasts <- dfFINAL_For.W.Avg1[25:192, ]
+
+
+forecasts <- as.data.frame(forecasts)
+
+write.csv(forecasts,"E:/NC State IAA/Classes/AA 502/Fall II/Time Series II/Homework/Final Project/forecasts.csv", row.names = TRUE)
+
+
+
+
+```
+
+Plots
+```{r}
+#### plot weight avg model
+plot_source <- data.frame(energy$datetime[28081:28248]) # pull the date time variable for the last 168 hours into your new table
+
+for_plot <- forecast::forecast(FINALWC.Model, h = 168) 
+
+plot_source$forecast <- For.W.Avg2[1:168] # Grab the $mean column from your forecast
+
+plot_source$actual <- ts_valid # Grab the values from your validation TS object
+
+names(plot_source)[1] <- "Hour" # Rename columns
+names(plot_source)[2] <- "Forecast"
+names(plot_source)[3] <- "Actual"
+
+plot_source_long <- pivot_longer(plot_source, cols = Forecast:Actual, names_to = "Source", values_to = "Value") # Convert to 'long' form to help with plotting
+
+# Graph forecast of NN against Validation
+
+ggplot(plot_source_long, aes(Hour, Value, group = Source, color = Source)) + # use 'long' table
+  geom_line() + # plot lines
+  scale_color_manual(values = c("black","darkolivegreen4")) + # set colors of your lines
+  labs(title = "Energy Usage with Composite Model Forecast Overlay (Oct. 14 - 20, 2022)", x = "Date", y = "Energy Usage (Megawatts)") # labels
+
+
+
+####test data plot
+plot_source <- data.frame(energy$datetime[28249:28392]) # pull the date time variable for the last 168 hours into your new table
+
+for_plot <- forecast::forecast(WC.Model2, h = 168) 
+plot_source$forecast <- For.W.Avg2[1:144] # Grab the $mean column from your forecast
+
+plot_source$actual <- ts_valid[1:144] # Grab the values from your validation TS object
+
+names(plot_source)[1] <- "Hour" # Rename columns
+names(plot_source)[2] <- "Forecast"
+names(plot_source)[3] <- "Actual"
+
+plot_source_long <- pivot_longer(plot_source, cols = Forecast:Actual, names_to = "Source", values_to = "Value") # Convert to 'long' form to help with plotting
+
+# Graph forecast of NN against Validation
+
+ggplot(plot_source_long, aes(Hour, Value, group = Source, color = Source)) + # use 'long' table
+  geom_line() + # plot lines
+  scale_color_manual(values = c("black","darkolivegreen4")) + # set colors of your lines
+  labs(title = "Energy Usage with Composite Model Forecast Overlay (Oct. 21 - 26, 2022)", x = "Date", y = "Energy Usage (Megawatts)") # labels
+
+
+
+```
+
+
+
+
+
+Appendix
+```{r}
+#------------------------------------------------------------------------------#
+
+###----------###
+### Appendix ###
+###----------###
+
+# Additional ESM Models
+
+# Building a Single Exponential Smoothing (SES) Model 
+ses_train <- ses(ts_train, initial = "simple", h = 168)
+
+summary(ses_train)
+
+autoplot(ses_train)+
+  autolayer(fitted(ses_train),series="Fitted")+ylab("Energy Consumption")
+
+# Building a Linear Exponential Smoothing Model 
+les_train <- holt(ts_train, initial = "optimal", h = 168)
+
+summary(les_train)
+
+autoplot(les_train)+
+  autolayer(fitted(les_train),series="Fitted")+labs(title="AECO Energy Consumption with Holt forecasts",y="Energy Consumption")
+
+# Building a Damped Linear Exponential Smoothing Model
+ldes_train <- holt(ts_train, initial = "optimal", h = 168, damped = TRUE)
+summary(ldes_train)
+
+autoplot(ldes_train)+
+  autolayer(fitted(ldes_train),series="Fitted")+labs(title="AECO Energy Consumption with Linear Damped ESM Forecast")
+
+# Check forecast against validation set
+# Calculate prediction errors from forecast
+
+ses_for <- forecast::forecast(ses_train, h = 168)
+ses_error <- ts_valid - ses_for$mean
+
+les_for <- forecast::forecast(les_train, h = 168)
+les_error <- ts_valid - les_for$mean
+
+ldes_for <- forecast::forecast(ldes_train, h = 168)
+ldes_error <- ts_valid - ldes_for$mean
+
+# SES
+SES_MAE <- mean(abs(ses_error))
+SES_MAPE <- mean(abs(ses_error)/abs(ts_valid))*100
+
+# LES
+LES_MAE <- mean(abs(les_error))
+LES_MAPE <- mean(abs(les_error)/abs(ts_valid))*100
+
+# LDES
+LDES_MAE <- mean(abs(ldes_error))
+LDES_MAPE <- mean(abs(ldes_error)/abs(ts_valid))*100
+
+# SES
+SES_MAE
+SES_MAPE
+# LES
+LES_MAE 
+LES_MAPE
+# LDES
+LDES_MAE 
+LDES_MAPE 
+
+#------------------------------------------------------------------------------#
+
+# Additional Manual ARIMA models
+
+# ARIMA(AR1,0,0)(0,1,1)[24]
+
+ts_train %>% Arima(order=c(1,0,0), seasonal = c(0,1,1)) %>% residuals() %>% ggtsdisplay()
+
+S1_ARIMA <- Arima(ts_train, order=c(1,0,0), seasonal = c(0,1,1))
+
+summary(S1_ARIMA) # BIC = 264382.4
+
+# Ljung Box
+
+checkresiduals(S1_ARIMA) # LB - p-value < 2.2e-16
+
+# Calculate Mean Error on validation
+
+S1_ARIMA_error <- ts_valid - forecast::forecast(S1_ARIMA, h = 168)$mean
+
+S1_ARIMA_MAE <- mean(abs(S1_ARIMA_error))
+S1_ARIMA_MAPE <- mean(abs(S1_ARIMA_error)/abs(ts_valid))*100
+
+# ARIMA(AR1,0,0)(0,1,2)[24]
+
+ts_train %>% Arima(order=c(1,0,0), seasonal = c(0,1,2)) %>% residuals() %>% ggtsdisplay()
+
+S2_ARIMA <- Arima(ts_train, order=c(1,0,0), seasonal = c(0,1,2))
+
+summary(S2_ARIMA) # BIC = 263858.1
+
+# Ljung Box
+
+checkresiduals(S2_ARIMA) # LB p-value < 2.2e-16
+
+# Calculate Mean Error on validation
+
+S2_ARIMA_error <- ts_valid - forecast::forecast(S2_ARIMA, h = 168)$mean
+
+S2_ARIMA_MAE <- mean(abs(S2_ARIMA_error))
+S2_ARIMA_MAPE <- mean(abs(S2_ARIMA_error)/abs(ts_valid))*100
+
+# ARIMA(AR1,0,0)(0,1,3)[24]
+
+ts_train %>% Arima(order=c(1,0,0), seasonal = c(0,1,3)) %>% residuals() %>% ggtsdisplay()
+
+S3_ARIMA <- Arima(ts_train, order=c(1,0,0), seasonal = c(0,1,3))
+
+summary(S3_ARIMA) # BIC = 263867.6
+
+# Ljung Box
+
+checkresiduals(S3_ARIMA) # LB p-value < 2.2e-16
+
+# Calculate Mean Error on validation
+
+S3_ARIMA_error <- ts_valid - forecast::forecast(S3_ARIMA, h = 168)$mean
+
+S3_ARIMA_MAE <- mean(abs(S3_ARIMA_error))
+S3_ARIMA_MAPE <- mean(abs(S3_ARIMA_error)/abs(ts_valid))*100
+
+# ARIMA(AR1,0,0)(1,1,2)[24]
+
+ts_train %>% Arima(order=c(1,0,0), seasonal = c(1,1,2)) %>% residuals() %>% ggtsdisplay()
+
+S4_ARIMA <- Arima(ts_train, order=c(1,0,0), seasonal = c(1,1,2))
+
+summary(S4_ARIMA) # BIC = 263868.1
+
+# Ljung Box
+
+checkresiduals(S4_ARIMA) # LB p-value < 2.2e-16
+
+# Calculate Mean Error on validation
+
+S4_ARIMA_error <- ts_valid - forecast::forecast(S4_ARIMA, h = 168)$mean
+
+S4_ARIMA_MAE <- mean(abs(S4_ARIMA_error))
+S4_ARIMA_MAPE <- mean(abs(S4_ARIMA_error)/abs(ts_valid))*100
+
+#------------------------------------------------------------------------------#
+
+# Deterministic Seasonality ARIMA Modeling
+
+#### Fourier Transforms
+
+plots <- list()
+
+for (i in seq(11)) { # seq 11 is half the variables (24 is actually 23 dummy variables, then round down)
+  fit <- auto.arima(ts_train, xreg = fourier(ts_train, K = i), # K is number of pairs
+                    seasonal = FALSE, lambda = NULL)
+  plots[[i]] <- autoplot(forecast::forecast(fit,
+                                            xreg = fourier(ts_train, K=i, h=168))) +
+    xlab(paste("K=",i,"   BIC=",round(fit$bic,2))) +
+    ylab("") + ylim(30000,80000)
+}
+
+gridExtra::grid.arrange(
+  plots[[1]],plots[[2]],plots[[3]],
+  plots[[4]],plots[[5]],plots[[6]],
+  plots[[7]],plots[[8]],plots[[9]],
+  plots[[10]],plots[[11]], nrow=4)
+
+# plots[[6]]
+
+F_ARIMA <- auto.arima(ts_train, xreg = fourier(ts_train, K = 6), seasonal = FALSE) # We are choosing the K value that was best from the above plots
+
+summary(F_ARIMA)
+
+# Calculate Mean Error on validation
+
+F_ARIMA_error <- ts_valid - forecast::forecast(F_ARIMA, h = 168, xreg = fourier(ts_train, K = 6, h = 168))$mean
+
+F_ARIMA_MAE <- mean(abs(F_ARIMA_error))
+F_ARIMA_MAPE <- mean(abs(F_ARIMA_error)/abs(ts_valid))*100
+
+```
