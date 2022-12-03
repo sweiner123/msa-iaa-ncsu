@@ -101,10 +101,10 @@ It's broken down as:
 
 <ul> 
 
-  <li> <a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/04.%20Fall%20II">Analytics Methods and Applications III</a></li>
+  <li> <a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/05.%20Fall%20III">Analytics Methods and Applications III</a></li>
 
   <ol>
-  <li><a href="">Machine Learning</a></li>
+  <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/05.%20Fall%20III/Machine%20Learning">Machine Learning</a></li>
 
   <li><a href="">Survival Analysis</a></li>
 
