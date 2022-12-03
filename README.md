@@ -91,7 +91,7 @@ It's broken down as:
 
   <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/04.%20Fall%20II/Time%20Series%20II">Time Series II</a></li>
 
-  <li><a href="">Visualization</a></li>
+  <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/04.%20Fall%20II/Visualization">Visualization</a></li>
 
   </ol>
 
