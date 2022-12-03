@@ -1,4 +1,4 @@
-## The course material for [Survival Analysis](https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/05.%20Fall%20III/Machine%20Learning) Class - 
+## The course material for [Survival Analysis](https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/05.%20Fall%20III/Survival%20Analysis) Class - 
 
 
 * [Datasets](https://github.com/sjsimmo2/Survival)

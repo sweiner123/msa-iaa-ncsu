@@ -106,7 +106,7 @@ It's broken down as:
   <ol>
   <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/05.%20Fall%20III/Machine%20Learning">Machine Learning</a></li>
 
-  <li><a href="">Survival Analysis</a></li>
+  <li><a href="https://github.com/nikkhil13/msa-iaa-ncsu/tree/main/05.%20Fall%20III/Survival%20Analysis">Survival Analysis</a></li>
 
   </ol>
 
